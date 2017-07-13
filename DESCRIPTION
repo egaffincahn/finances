@@ -1,0 +1,17 @@
+Package: finances
+Title: Keep track of your finances with R
+Version: 1.0.6
+Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Description: Keeps a ledger with all your transactions in it. Has the capability to add new transactions to one or more financial accounts, track budgets, keep track of multiple accounts, and visualize your data in several ways.
+Depends: R (>= 3.3.2)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Author: EG Gaffin-Cahn <egaffincahn@gmail.com> [aut, cre]
+Date: 04/30/2017
+Imports: dplyr, tidyr
+Suggests: ggplot2, Hmisc
+RoxygenNote: 6.0.1
+NeedsCompilation: no
+Packaged: 2017-04-30 14:54:17 UTC; Elon
+Maintainer: First Last <first.last@example.com>
