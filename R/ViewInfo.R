@@ -24,10 +24,11 @@
 
 #' @rdname ViewInfo
 #' @export
-viewAssets <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), yr = currentYear(), mo = currentMonth(), dy = currentDay(), suppress = TRUE) {
-    ledger.mini <- colSums(ledger[, viewAccountCategories()])
-    if (!suppress) print(ledger.mini)
-    return(ledger.mini)
+viewAssets <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), to = componentsToDate(), suppress = TRUE) {
+    ledger.mini <- viewTransactions(to = to)
+    ledger.sums <- colSums(ledger.mini[, viewAccountCategories()])
+    if (!suppress) print(ledger.sums)
+    return(ledger.sums)
 }
 
 #' @rdname ViewInfo
