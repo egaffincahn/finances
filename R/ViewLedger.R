@@ -69,5 +69,5 @@ truncateLedger <- function(ledger) {
 
 #' @export
 .dataLocation <- function() {
-    file.path(path.finances(), "copy2data", "finances.Rdata")
+    file.path(path.finances(), "Data", "finances.Rdata")
 }
