@@ -76,12 +76,12 @@ addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedg
         n <- nrow(ledger)
         ledger[n, viewAccountCategories(ledger)] <- 0
         ledger <- ledger %>%
-            .addTransactionYear(yr = currentYear(), index = n) %>%
-            .addTransactionMonth(mo = currentMonth(), index = n) %>%
-            .addTransactionDay(dy = transactions[i, 1], index = n) %>%
-            .addTransactionDescription(description = transactions[i, 2], index = n) %>%
-            .addTransactionBudgetCategory(budget.category = transactions[i, 3], index = n) %>%
-            .addTransactionAccountCategory(account.category = paste("acct.", transactions[i, 4], sep = ""), account.amount = transactions[i, 5], index = n)
+            .addTransactionYear(yr = transactions[i, 1], index = n) %>%
+            .addTransactionMonth(mo = transactions[i, 2], index = n) %>%
+            .addTransactionDay(dy = transactions[i, 3], index = n) %>%
+            .addTransactionDescription(description = transactions[i, 4], index = n) %>%
+            .addTransactionBudgetCategory(budget.category = transactions[i, 5], index = n) %>%
+            .addTransactionAccountCategory(account.category = paste("acct.", transactions[i, 6], sep = ""), account.amount = transactions[i, 7], index = n)
         print("Wrote charge:")
         viewLedger(ledger[nrow(ledger), ], suppress = FALSE, trunc = TRUE)
     }
@@ -288,22 +288,21 @@ viewTransactions <- function(ledger = viewLedger(file = file), file = viewLedger
 
 #' @rdname AddTransaction
 #' @export
-viewDuplicates <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), yr = NULL, mo = NULL, dy = NULL, from = NULL, to = componentsToDate(),
-                        descriptions = NULL, budget.categories = NULL, amount.ops = `==`, account.amounts = NULL, account.categories = NULL,
-                        query = is.null(yr) && is.null(mo) && is.null(dy) && is.null(from) && is.null(to) &&
-                            is.null(descriptions) && is.null(budget.categories) && is.null(account.amounts) && is.null(account.categories),
-                        suppress = TRUE, trunc = TRUE) {
-
-    ledger <- viewTransactions(ledger, file, yr, mo, dy, from, to, desriptions, budget.categories, amount.ops, account.ops, account.amounts, account.categories, query, suppress, trunc)
-    duplicates <- as.data.frame(matrix(ncol = ncol(ledger)))
+viewDuplicates <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), ..., suppress = TRUE, trunc = TRUE) {
+    ledger <- viewTransactions(ledger, ..., suppress = suppress, trunc = trunc)
+    duplicates <- as.data.frame(matrix(numeric(), ncol = ncol(ledger)))
     colnames(duplicates) <- colnames(ledger)
-    for (i in 1:nrow(ledger)) {
-        for (j in (i+1):nrow(ledger)) {
+    dates <- componentsToDate(ledger$year, ledger$month, ledger$day)
+    for (i in 1:(nrow(ledger)-1)) {
+        sameDates <- which(dates[i] == dates)
+        for (j in sameDates[sameDates > i]) {
             if (all(ledger[i, ] == ledger[j, ])) {
                 duplicates[nrow(duplicates)+1, ] <- ledger[i, ]
+                duplicates[nrow(duplicates)+1, ] <- ledger[j, ]
             }
         }
     }
+    if (trunc) duplicates <- truncateLedger(duplicates)
     if (!suppress) print(duplicates)
     return(duplicates)
 }
