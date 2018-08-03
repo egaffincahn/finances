@@ -3,6 +3,7 @@
 #' @name PlotFinances
 #'
 #' @import tidyverse
+#' @import plotly
 #' @importFrom Hmisc monthDays
 #' @param budget.category A character vector of budget category names.
 #'

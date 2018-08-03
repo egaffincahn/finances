@@ -10,7 +10,7 @@ LazyData: true
 Author: EG Gaffin-Cahn <egaffincahn@gmail.com> [aut, cre]
 Date: 04/30/2017
 Imports: tidyverse
-Suggests: Hmisc
+Suggests: Hmisc, plotly
 RoxygenNote: 6.0.1
 NeedsCompilation: no
 Packaged: 2017-04-30 14:54:17 UTC; Elon
