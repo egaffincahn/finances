@@ -6,7 +6,8 @@
 #' @importFrom Hmisc monthDays
 #' @param budget.category A character vector of budget category names.
 #'
-#' @description Various plotting functions to show assets, accounts, budgets, etc. over different time periods.
+#' @description Various plotting functions to show assets, accounts, budgets,
+#'   etc. over different time periods.
 #'
 #' @details All \code{Plot} functions show the dollar amounts over some
 #'   specified time. \code{Change} shows the monthly adjustment to the ledger
@@ -26,66 +27,71 @@
 #'
 #' @inheritParams viewLedger
 #'
-#' @return \code{ggplot} object, which is automatically printed if not stored in a variable.
+#' @return \code{ggplot} object, which is automatically printed if not stored in
+#'   a variable.
 #'
 
 #' @rdname PlotFinances
 #' @export
-plotAccountsChange <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL) {
-    accounts <- viewAccountCategories()
-    monthly.accounts <- ledger %>% viewTransactions(from = from, to = to, query = FALSE, trunc = FALSE) %>%
-        select(-day, -description, -budget.category) %>% group_by(year, month) %>%
-        do(data.frame(assets.change = colSums(.[accounts]), account = accounts)) %>% as.data.frame %>%
-        mutate(abs.month = componentsToDate(yr = .$year, mo = .$month, dy = 15))
-    monthly.accounts$account <- factor(monthly.accounts$account, levels = viewAccountCategories(ledger), labels = viewAccountCategories(ledger, formal = TRUE))
-    g <- ggplot(monthly.accounts, aes(abs.month, assets.change, fill = account)) +
-        geom_area() + theme_minimal() +
-        labs(x = "Date", y = "Change in Account ($)", title = "Account Value by Month", fill = "Account")
+plotAccountsChange <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL, accounts = viewAccountCategories(ledger)) {
+    accounts.change <- viewLedger(ledger, from = from, to = to, accounts = accounts) %>% .binByDate(by = "month") %>% group_by(account, add = TRUE) %>% .binFun(fun = sum)
+    g <- ggplot(accounts.change, aes(date, amount, color = account)) + geom_line() +
+        scale_x_date(date_breaks = "1 year", date_minor_breaks = "1 month", name = "Date") +
+        scale_y_continuous(name = "Change ($)") +
+        scale_color_discrete(labels = viewAccountCategories(formal = TRUE), name = "Account") +
+        theme_minimal()
     return(g)
 }
 
 #' @rdname PlotFinances
 #' @export
-plotAccountsCumulative <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL) {
-    accounts <- viewAccountCategories()
-    monthly.accounts <- ledger %>% viewTransactions(from = from, to = to, query = FALSE, trunc = FALSE) %>%
-        select(-day, -description, -budget.category) %>% group_by(year, month) %>%
-        do(data.frame(as.list(colSums(.[accounts])))) %>%
-        {as.data.frame(cbind(year = .$year, month = .$month, apply(.[, accounts], 2, function(x) cumsum(x))))} %>%
-        mutate(abs.month = componentsToDate(yr = .$year, mo = .$month, dy = 15)) %>%
-        gather(account, assets.net, -year, -month, -abs.month)
-    monthly.accounts$account <- factor(monthly.accounts$account, levels = viewAccountCategories(ledger), labels = viewAccountCategories(ledger, formal = TRUE))
-    g <- ggplot(monthly.accounts, aes(abs.month, assets.net, fill = account)) +
-        geom_area() + theme_minimal() +
-        labs(x = "Date", y = "Account Value ($)", title = "Cumulative Account Value", fill = "Account")
+plotAccountsCumulative <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL, accounts = viewAccountCategories(ledger)) {
+    accounts.cumulative <- viewLedger(ledger, from = from, to = to, accounts = accounts) %>%
+        .binByDate(by = "month") %>% group_by(account, add = TRUE) %>% .binFun(fun = sum) %>%
+        group_by(account) %>% do({
+            data.frame(amount.cumulative = cumsum(.$amount), date = .$date)
+        })
+
+    accounts <- levels(accounts.cumulative$account)
+    dates <- unique(accounts.cumulative$date)
+    combinations <- expand.grid(account = accounts, date = dates)
+    accounts.cumulative <- full_join(accounts.cumulative, combinations, by = c("account", "date")) %>%
+        arrange(date, account) %>%
+        group_by(account) %>% do({
+            amount.updated <- .$amount.cumulative
+            for (i in 1:nrow(.)) {
+                if (is.na(.$amount.cumulative[i])) amount.updated[i] <- ifelse(i==1, 0, amount.updated[i-1])
+            }
+            data.frame(amount = amount.updated, date = .$date, account = .$account)
+        }) %>%
+        as.data.frame()
+    g <- ggplot(accounts.cumulative, aes(date, amount, fill = account)) + geom_area(position = "stack") +
+        scale_x_date(date_breaks = "1 year", date_minor_breaks = "1 month", name = "Date") +
+        scale_y_continuous(name = "Cumulative Amount ($)") +
+        scale_fill_discrete(labels = viewAccountCategories(accounts = accounts, formal = TRUE), name = "Account") +
+        theme_minimal()
     return(g)
 }
 
 #' @rdname PlotFinances
 #' @export
-plotAssetsChange <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL) {
-    account.categories <- viewAccountCategories()
-    monthly.assets.change <- ledger %>% viewTransactions(from = from, to = to, query = FALSE, trunc = FALSE) %>%
-        select(-day, -description, -budget.category) %>% group_by(year, month) %>%
-        do(data.frame(assets.change = sum(.[, account.categories]))) %>% as.data.frame() %>%
-        mutate(abs.month = componentsToDate(yr = .$year, mo = .$month, dy = 15))
-    g <- ggplot(monthly.assets.change, aes(abs.month, assets.change)) +
-        geom_area()  + theme_minimal() +
-        labs(x = "Date", y = "Amount ($)", title = "Net Change")
+plotAssetsChange <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL, accounts = viewAccountCategories(ledger)) {
+    assets.change <- viewLedger(ledger, from = from, to = to, accounts = accounts) %>% .binByDate(by = "month") %>% .binFun(fun = sum)
+    g <- ggplot(assets.change, aes(date, amount)) + geom_area() +
+        scale_x_date(date_breaks = "1 year", date_minor_breaks = "1 month", name = "Date") +
+        scale_y_continuous(name = "Change in Assets ($)") +
+        theme_minimal()
     return(g)
 }
 
 #' @rdname PlotFinances
 #' @export
-plotAssetsCumulative <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL) {
-    account.categories <- viewAccountCategories()
-    monthly.assets <- ledger %>% viewTransactions(from = from, to = to, query = FALSE, trunc = FALSE) %>%
-        select(-day, -description, -budget.category) %>% group_by(year, month) %>%
-        do(data.frame(assets.change = sum(.[, account.categories]))) %>% as.data.frame %>%
-        mutate(assets.net = cumsum(assets.change), abs.month = componentsToDate(yr = .$year, mo = .$month, dy = 15))
-    g <- ggplot(monthly.assets, aes(abs.month, assets.net)) +
-        geom_area()  + theme_minimal() +
-        labs(x = "Date", y = "Amount ($)", title = "Net Assets")
+plotAssetsCumulative <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), from = NULL, to = NULL, accounts = viewAccountCategories(ledger)) {
+    assets.cumulative <- viewLedger(ledger, from = from, to = to, accounts = accounts) %>% .binByDate(by = "month") %>% .binFun(fun = sum) %>% mutate(amount.cumulative = cumsum(.$amount))
+    g <- ggplot(assets.cumulative, aes(date, amount.cumulative)) + geom_area() +
+        scale_x_date(date_breaks = "1 year", date_minor_breaks = "1 month", name = "Date") +
+        scale_y_continuous(name = "Cumulative Assets ($)") +
+        theme_minimal()
     return(g)
 }
 
@@ -184,3 +190,26 @@ plotBudgetsPie <- function(ledger = viewLedger(file = file), file = viewLedgerFi
     ledger.budgets$cat <- factor(ledger.budgets$cat, levels = c("overearned", "remaining", "overspent", "accounted"))
     return(ledger.budgets)
 }
+
+#' descriptions...
+#' @export
+.binFun <- function(ledger.tbl, fun) {
+    ledger.tbl <- do(ledger.tbl, {
+        data.frame(amount = fun(.$amount))
+    })
+    ledger.tbl$date <- as.Date(ledger.tbl$date)
+    ledger <- as.data.frame(ledger.tbl)
+    return(ledger)
+}
+
+#' descriptions...
+#' @export
+.binByDate <- function(ledger, by = "month") {
+    ledger.tbl <- ledger %>%
+        ungroup() %>%
+        mutate(date = cut.Date(ledger$date, breaks = seq.Date(ledger$date[1], Sys.Date()+31, by = by))) %>%
+        group_by(date)
+    return(ledger.tbl)
+}
+
+
