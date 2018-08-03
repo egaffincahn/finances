@@ -2,7 +2,7 @@
 #'
 #' @name PlotFinances
 #'
-#' @import ggplot2
+#' @import tidyverse
 #' @importFrom Hmisc monthDays
 #' @param budget.category A character vector of budget category names.
 #'
@@ -191,7 +191,7 @@ plotBudgetsPie <- function(ledger = viewLedger(file = file), file = viewLedgerFi
     return(ledger.budgets)
 }
 
-#' descriptions...
+#' Performs a supplied function on the amount column of a ledger tibble, likely grouped by some time frame in the date column.
 #' @export
 .binFun <- function(ledger.tbl, fun) {
     ledger.tbl <- do(ledger.tbl, {
@@ -202,7 +202,7 @@ plotBudgetsPie <- function(ledger = viewLedger(file = file), file = viewLedgerFi
     return(ledger)
 }
 
-#' descriptions...
+#' Bins the date column in a ledger data frame by a given timeframe. Returns a tibble grouped by (only) the timeframe
 #' @export
 .binByDate <- function(ledger, by = "month") {
     ledger.tbl <- ledger %>%
