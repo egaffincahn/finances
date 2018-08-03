@@ -31,12 +31,12 @@ componentsToDate(yr = currentYear(), mo = currentMonth(),
 }
 \value{
 Each of the \code{current*} functions return an integer. \code{last*}
-  and \code{componentsToDate} return a \code{POSIXct}.
+  and \code{componentsToDate} return a \code{Date} class.
 }
 \description{
 The \code{current} series gets today's year, month, or day,
   returning just an integer. The \code{last} series (including
-  \code{yesterday}) returns a full \code{POSIXct} type for a recent date for
+  \code{yesterday}) returns a full \code{Date} class for a recent date for
   easily providing values to the \code{from} input argument in other
   functions. For custom dates, use \code{componentsToDate}. To return today's
   date in the proper format, call \code{componentsToDate()}.

@@ -9,8 +9,8 @@ Encoding: UTF-8
 LazyData: true
 Author: EG Gaffin-Cahn <egaffincahn@gmail.com> [aut, cre]
 Date: 04/30/2017
-Imports: dplyr, tidyr
-Suggests: ggplot2, Hmisc
+Imports: tidyverse
+Suggests: Hmisc
 RoxygenNote: 6.0.1
 NeedsCompilation: no
 Packaged: 2017-04-30 14:54:17 UTC; Elon

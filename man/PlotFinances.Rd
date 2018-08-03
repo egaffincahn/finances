@@ -12,16 +12,19 @@
 \title{Plot financial data}
 \usage{
 plotAccountsChange(ledger = viewLedger(file = file),
-  file = viewLedgerFile(), from = NULL, to = NULL)
+  file = viewLedgerFile(), from = NULL, to = NULL,
+  accounts = viewAccountCategories(ledger))
 
 plotAccountsCumulative(ledger = viewLedger(file = file),
-  file = viewLedgerFile(), from = NULL, to = NULL)
+  file = viewLedgerFile(), from = NULL, to = NULL,
+  accounts = viewAccountCategories(ledger))
 
 plotAssetsChange(ledger = viewLedger(file = file), file = viewLedgerFile(),
-  from = NULL, to = NULL)
+  from = NULL, to = NULL, accounts = viewAccountCategories(ledger))
 
 plotAssetsCumulative(ledger = viewLedger(file = file),
-  file = viewLedgerFile(), from = NULL, to = NULL)
+  file = viewLedgerFile(), from = NULL, to = NULL,
+  accounts = viewAccountCategories(ledger))
 
 plotBudgetsHistory(ledger = viewLedger(file = file),
   file = viewLedgerFile(), budget.categories = viewBudgetCategoriesAll(),
@@ -38,9 +41,9 @@ plotBudgetsPie(ledger = viewLedger(file = file), file = viewLedgerFile(),
 \arguments{
 \item{ledger}{Data frame ledger. The ledger where each row is a transaction
 and with columns for \code{year}, \code{month}, \code{day},
-\code{description}, \code{budget.category}, and one column for each
+\code{description}, \code{budget}, and one column for each
 financial account. All columns should be numeric except for
-\code{description} and \code{budget.category}.}
+\code{description} and \code{budget}.}
 
 \item{file}{The path for the ledger for loading and saving. Has an underlying
 default that needs to be changed in the \code{ViewLedger} file.}
@@ -58,10 +61,12 @@ behavior is to allow all possible values.}
 \item{budget.category}{A character vector of budget category names.}
 }
 \value{
-\code{ggplot} object, which is automatically printed if not stored in a variable.
+\code{ggplot} object, which is automatically printed if not stored in
+  a variable.
 }
 \description{
-Various plotting functions to show assets, accounts, budgets, etc. over different time periods.
+Various plotting functions to show assets, accounts, budgets,
+  etc. over different time periods.
 }
 \details{
 All \code{Plot} functions show the dollar amounts over some

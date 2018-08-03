@@ -9,12 +9,10 @@
 \alias{viewBudgetCategoriesSpending}
 \alias{viewBudgetCategoriesReal}
 \alias{viewAccountCategories}
-\alias{viewNonAccountCategories}
 \title{Print out reference financial info}
 \usage{
 viewAssets(ledger = viewLedger(file = file), file = viewLedgerFile(),
-  yr = currentYear(), mo = currentMonth(), dy = currentDay(),
-  suppress = TRUE)
+  from = as.Date("1900-01-01"), to = componentsToDate(), suppress = TRUE)
 
 viewBudgets(suppress = FALSE)
 
@@ -27,29 +25,22 @@ viewBudgetCategoriesSpending(suppress = TRUE)
 viewBudgetCategoriesReal(suppress = TRUE)
 
 viewAccountCategories(ledger = viewLedger(file = file),
-  file = viewLedgerFile(), formal = FALSE, suppress = TRUE)
-
-viewNonAccountCategories(ledger = viewLedger(file = file),
-  file = viewLedgerFile(), suppress = TRUE)
+  file = viewLedgerFile(), accounts = NULL, formal = FALSE,
+  suppress = TRUE)
 }
 \arguments{
 \item{ledger}{Data frame ledger. The ledger where each row is a transaction
 and with columns for \code{year}, \code{month}, \code{day},
-\code{description}, \code{budget.category}, and one column for each
+\code{description}, \code{budget}, and one column for each
 financial account. All columns should be numeric except for
-\code{description} and \code{budget.category}.}
+\code{description} and \code{budget}.}
 
 \item{file}{The path for the ledger for loading and saving. Has an underlying
 default that needs to be changed in the \code{ViewLedger} file.}
 
-\item{yr}{Year, month, day. When one of these is \code{NULL}, function
-behavior is to allow all possible values.}
+\item{from}{Boundaries on the ledger dates. Requires Date class.}
 
-\item{mo}{Year, month, day. When one of these is \code{NULL}, function
-behavior is to allow all possible values.}
-
-\item{dy}{Year, month, day. When one of these is \code{NULL}, function
-behavior is to allow all possible values.}
+\item{to}{Boundaries on the ledger dates. Requires Date class.}
 
 \item{suppress}{Prevents it from printing to the console. All low-level
 functions default to \code{TRUE}, while high-level functions that do not
@@ -64,7 +55,7 @@ Grabs information from the ledger.
 }
 \details{
 \code{viewAssets} simply prints the current values for each account
-  by summing the columns of each account.\cr \code{viewBudgets} returns the
+  by summing the values of each account.\cr \code{viewBudgets} returns the
   budget categories and their allowed amounts per month.\cr
   \code{viewBudgetCategories} grabs the levels of the factor column
   \code{budget.category}, while \code{viewBudgetCategoriesReal} ignores the
@@ -72,7 +63,6 @@ Grabs information from the ledger.
   \code{viewBudgetCategoriesSpending} is the same, but also discards expected
   income, and \code{viewBudgetCategoriesSpendingSmall} elminiates categories
   with spending outside one standard deviation of all the budgeted
-  amounts.\cr \code{viewAccountCategories} provides the column names from the
-  ledger that correspond to the account categories. They all begin with
-  <\code{acct.}>.
+  amounts.\cr \code{viewAccountCategories} provides the factor names from the
+  ledger that correspond to the account categories.
 }

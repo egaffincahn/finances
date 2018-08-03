@@ -10,31 +10,31 @@
 saveLedger(ledger, file = viewLedgerFile())
 
 viewLedger(ledger = read.csv(file), file = viewLedgerFile(),
-  suppress = TRUE, trunc = FALSE)
+  from = as.Date("1900-01-01"), to = Sys.Date(), on = NULL,
+  descriptions = NULL, budgets = NULL, amount.ops = NULL,
+  amounts = NULL, accounts = NULL, suppress = TRUE)
 
 viewLedgerFile(file = NULL, suppress = TRUE)
 }
 \arguments{
 \item{ledger}{Data frame ledger. The ledger where each row is a transaction
 and with columns for \code{year}, \code{month}, \code{day},
-\code{description}, \code{budget.category}, and one column for each
+\code{description}, \code{budget}, and one column for each
 financial account. All columns should be numeric except for
-\code{description} and \code{budget.category}.}
+\code{description} and \code{budget}.}
 
 \item{file}{The path for the ledger for loading and saving. Has an underlying
 default that needs to be changed in the \code{ViewLedger} file.}
+
+\item{from, to}{Boundaries on the ledger dates. Requires Date class.}
 
 \item{suppress}{Prevents it from printing to the console. All low-level
 functions default to \code{TRUE}, while high-level functions that do not
 have callers and exist for the sole purpose of printing out information
 default to \code{FALSE}.}
 
-\item{trunc}{removes the account columns which has all values == 0.}
-
 \item{yr, mo, dy}{Year, month, day. When one of these is \code{NULL}, function
 behavior is to allow all possible values.}
-
-\item{from, to}{Boundaries on the ledger dates. Requires Date class.}
 }
 \value{
 \code{viewLedger} and each of its date components return a data frame
