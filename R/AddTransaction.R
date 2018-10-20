@@ -220,13 +220,22 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
 .addTransactionBudgetCategory <- function() {
     existing.categories <- viewBudgetCategoriesAll(suppress = FALSE)
     budget <- readline("Enter budget category from above or its index: ")
-    if (suppressWarnings(!is.na(as.numeric(budget)))) budget <- viewBudgetCategoriesAll()[as.numeric(budget)]
-    budget.temp <- "placeholder"
-    while (!(budget %in% existing.categories) && budget.temp != "") {
-        budget.temp <- readline(paste(budget, "is not a current budget category. Enter a new one or leave blank to add. "))
-        if (budget.temp != "") budget <- budget.temp
+    while (TRUE) {
+        budget.numeric <- suppressWarnings(as.numeric(budget))
+        if (!is.na(budget.numeric)) { # budget is numeric
+            if (budget.numeric > 0 && budget.numeric <= length(existing.categories)) return(existing.categories[budget.numeric])
+            budget <- readline("Not a valid index. Enter a new budget category from above or its index: ")
+        } else { # budget is character, probably
+            if (budget %in% existing.categories) return(budget)
+            if (budget == "") {
+                budget <- readline("Budget cannot be blank. Enter a new one or leave blank to add. ")
+                next()
+            }
+            budget.temp <- budget
+            budget <- readline(paste(budget, "is not a current budget category. Enter a new one or leave blank to add. "))
+            if (budget == "") return(budget.temp)
+        }
     }
-    return(budget)
 }
 
 #' @export
