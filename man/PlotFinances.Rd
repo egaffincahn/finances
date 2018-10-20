@@ -19,23 +19,25 @@ plotAccountsCumulative(ledger = viewLedger(file = file),
   file = viewLedgerFile(), from = NULL, to = NULL,
   accounts = viewAccountCategories(ledger))
 
-plotAssetsChange(ledger = viewLedger(file = file), file = viewLedgerFile(),
-  from = NULL, to = NULL, accounts = viewAccountCategories(ledger))
+plotAssetsChange(ledger = viewLedger(file = file),
+  file = viewLedgerFile(), from = NULL, to = NULL,
+  accounts = viewAccountCategories(ledger))
 
 plotAssetsCumulative(ledger = viewLedger(file = file),
   file = viewLedgerFile(), from = NULL, to = NULL,
   accounts = viewAccountCategories(ledger))
 
 plotBudgetsHistory(ledger = viewLedger(file = file),
-  file = viewLedgerFile(), budget.categories = viewBudgetCategoriesAll(),
-  from = NULL, to = NULL)
+  file = viewLedgerFile(),
+  budget.categories = viewBudgetCategoriesAll(), from = NULL,
+  to = NULL)
 
-plotBudgetsBar(ledger = viewLedger(file = file), file = viewLedgerFile(),
-  yr = currentYear(), mo = currentMonth(),
+plotBudgetsBar(ledger = viewLedger(file = file),
+  file = viewLedgerFile(), yr = currentYear(), mo = currentMonth(),
   budget.categories = viewBudgetCategoriesAll())
 
-plotBudgetsPie(ledger = viewLedger(file = file), file = viewLedgerFile(),
-  yr = currentYear(), mo = currentMonth(),
+plotBudgetsPie(ledger = viewLedger(file = file),
+  file = viewLedgerFile(), yr = currentYear(), mo = currentMonth(),
   budget.categories = viewBudgetCategoriesSpendingSmall())
 }
 \arguments{

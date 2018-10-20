@@ -11,7 +11,7 @@ Author: EG Gaffin-Cahn <egaffincahn@gmail.com> [aut, cre]
 Date: 04/30/2017
 Imports: tidyverse, Hmisc, plotly
 Suggests: 
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 NeedsCompilation: no
 Packaged: 2017-04-30 14:54:17 UTC; Elon
 Maintainer: First Last <first.last@example.com>

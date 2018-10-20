@@ -18,10 +18,11 @@ addTransactionAuto(ledger = viewLedger(file = file),
 
 viewTransactionsAutoLoad(suppress = TRUE)
 
-editTransaction(ledger = viewLedger(file = file), file = viewLedgerFile(),
-  ...)
+editTransaction(ledger = viewLedger(file = file),
+  file = viewLedgerFile(), ...)
 
-viewLedgerMonth(ledger = viewLedger(file = file), file = viewLedgerFile())
+viewLedgerMonth(ledger = viewLedger(file = file),
+  file = viewLedgerFile())
 }
 \arguments{
 \item{ledger}{Data frame ledger. The ledger where each row is a transaction

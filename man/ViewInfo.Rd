@@ -12,7 +12,8 @@
 \title{Print out reference financial info}
 \usage{
 viewAssets(ledger = viewLedger(file = file), file = viewLedgerFile(),
-  from = as.Date("1900-01-01"), to = componentsToDate(), suppress = TRUE)
+  from = as.Date("1900-01-01"), to = componentsToDate(),
+  suppress = TRUE)
 
 viewBudgets(suppress = FALSE)
 
