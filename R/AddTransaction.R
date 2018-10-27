@@ -63,7 +63,7 @@ addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLe
     }
     new.rows$budget <- ifelse(is.null(budget), .addTransactionBudgetCategory(), budget)
     account.amounts <- if (is.null(account) || is.null(amount)) {
-        .addTransactionAccountCategory(ledger)
+        .addTransactionAccountCategory(ledger = ledger, account = account, amount = amount)
     } else {
         data.frame(account = account, amount = amount)
     }
@@ -239,11 +239,11 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
 }
 
 #' @export
-.addTransactionAccountCategory <- function(ledger = viewLedger(file = file), file = viewLedgerFile()) {
+.addTransactionAccountCategory <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), account = NULL, amount = NULL) {
     account.amounts <- data.frame(account = numeric(), amount = numeric())
     existing.categories <- viewAccountCategories(ledger = ledger, suppress = FALSE)
     while (TRUE) {
-        account <- readline("Enter account category from above or its index: ")
+        if (is.null(account)) account <- readline("Enter account category from above or its index: ")
         if (account == "") break()
         if (suppressWarnings(!is.na(as.numeric(account)))) account <- viewAccountCategories()[as.numeric(account)]
         account.temp <- "placeholder"
@@ -251,7 +251,7 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
             account.temp <- readline(paste(account, "is not a current account. Enter a new one or leave blank to add. "))
             if (account.temp != "") account <- account.temp
         }
-        amount <- as.numeric(readline(paste("Enter amount for ", account, ": ", sep = "")))
+        if (is.null(amount)) amount <- as.numeric(readline(paste("Enter amount for ", account, ": ", sep = "")))
         account.amounts <- rbind(account.amounts, data.frame(account = account, amount = amount))
     }
     return(account.amounts)
