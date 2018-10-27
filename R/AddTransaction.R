@@ -242,8 +242,13 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
 .addTransactionAccountCategory <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), account = NULL, amount = NULL) {
     account.amounts <- data.frame(account = numeric(), amount = numeric())
     existing.categories <- viewAccountCategories(ledger = ledger, suppress = FALSE)
+    inputs.supplied <- !is.null(account) || !is.null(amount) # assumes no account or amount was provided - if one was, don't ask for addtl accounts
     while (TRUE) {
-        if (is.null(account)) account <- readline("Enter account category from above or its index: ")
+        if (is.null(account)) {
+            account <- readline("Enter account category from above or its index: ")
+        } else {
+            inputs.supplied <- TRUE
+        }
         if (account == "") break()
         if (suppressWarnings(!is.na(as.numeric(account)))) account <- viewAccountCategories()[as.numeric(account)]
         account.temp <- "placeholder"
@@ -253,6 +258,7 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
         }
         if (is.null(amount)) amount <- as.numeric(readline(paste("Enter amount for ", account, ": ", sep = "")))
         account.amounts <- rbind(account.amounts, data.frame(account = account, amount = amount))
+        if (inputs.supplied) break()
     }
     return(account.amounts)
 }
