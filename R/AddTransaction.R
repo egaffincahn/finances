@@ -241,7 +241,7 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
 #' @export
 .addTransactionAccountCategory <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), account = NULL, amount = NULL) {
     account.amounts <- data.frame(account = numeric(), amount = numeric())
-    existing.categories <- viewAccountCategories(ledger = ledger, suppress = FALSE)
+    existing.categories <- viewAccountCategories(ledger = ledger, suppress = !is.null(account))
     inputs.supplied <- !is.null(account) || !is.null(amount) # assumes no account or amount was provided - if one was, don't ask for addtl accounts
     while (TRUE) {
         if (is.null(account)) {
