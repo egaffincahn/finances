@@ -7,7 +7,8 @@
 #'   \code{yesterday}) returns a full \code{Date} class for a recent date for
 #'   easily providing values to the \code{from} input argument in other
 #'   functions. For custom dates, use \code{componentsToDate}. To return today's
-#'   date in the proper format, call \code{componentsToDate()}.
+#'   date in the proper format, call \code{today}, which is a wrapper for
+#'   \code{componentsToDate}.
 #'
 #' @return Each of the \code{current*} functions return an integer. \code{last*}
 #'   and \code{componentsToDate} return a \code{Date} class.
@@ -31,6 +32,12 @@ currentMonth <- function() {
 #' @rdname ViewDate
 currentYear <- function() {
     as.numeric(format(Sys.Date(), "%Y"))
+}
+
+#' @export
+#' @rdname ViewDate
+today <- function() {
+    componentsToDate()
 }
 
 #' @export

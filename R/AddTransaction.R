@@ -169,10 +169,9 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
 .shiftIDs <- function(ledger, new.rows) {
     if (is.null(new.rows)) { # shifting from deleted transaction
         startRow <- (which(diff(ledger$ID) == 2)+1)
-        if (length(startRow) >= 0) {
-            shiftRows <- startRow:nrow(ledger)
-            ledger$ID[shiftRows] <- ledger$ID[shiftRows] - 1
-        }
+        if (length(startRow) == 0) return(ledger) # transaction was last one in ledger
+        shiftRows <- startRow:nrow(ledger)
+        ledger$ID[shiftRows] <- ledger$ID[shiftRows] - 1
         return(ledger)
     }
     # assumes only one new transaction (one transaction ID, all same date, etc)
@@ -239,9 +238,9 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
 }
 
 #' @export
-.addTransactionAccountCategory <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), account = NULL, amount = NULL) {
+.addTransactionAccountCategory <- function(account = NULL, amount = NULL) {
     account.amounts <- data.frame(account = numeric(), amount = numeric())
-    existing.categories <- viewAccountCategories(ledger = ledger, suppress = !is.null(account))
+    existing.categories <- viewAccountCategories(suppress = !is.null(account))
     inputs.supplied <- !is.null(account) || !is.null(amount) # assumes no account or amount was provided - if one was, don't ask for addtl accounts
     while (TRUE) {
         if (is.null(account)) {
