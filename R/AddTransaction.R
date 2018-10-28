@@ -259,6 +259,7 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
         if (is.null(amount)) amount <- as.numeric(readline(paste("Enter amount for ", account, ": ", sep = "")))
         account.amounts <- rbind(account.amounts, data.frame(account = account, amount = amount))
         if (inputs.supplied) break()
+        account <- NULL
     }
     return(account.amounts)
 }
