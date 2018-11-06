@@ -5,6 +5,7 @@
 \alias{currentDay}
 \alias{currentMonth}
 \alias{currentYear}
+\alias{today}
 \alias{yesterday}
 \alias{lastWeek}
 \alias{lastMonth}
@@ -17,6 +18,8 @@ currentDay()
 currentMonth()
 
 currentYear()
+
+today()
 
 yesterday()
 
@@ -39,5 +42,6 @@ The \code{current} series gets today's year, month, or day,
   \code{yesterday}) returns a full \code{Date} class for a recent date for
   easily providing values to the \code{from} input argument in other
   functions. For custom dates, use \code{componentsToDate}. To return today's
-  date in the proper format, call \code{componentsToDate()}.
+  date in the proper format, call \code{today}, which is a wrapper for
+  \code{componentsToDate}.
 }
