@@ -63,7 +63,7 @@ addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLe
     }
     new.rows$budget <- ifelse(is.null(budget), .addTransactionBudgetCategory(), budget)
     account.amounts <- if (is.null(account) || is.null(amount)) {
-        .addTransactionAccountCategory(ledger = ledger, account = account, amount = amount)
+        .addTransactionAccountCategory(account = account, amount = amount)
     } else {
         data.frame(account = account, amount = amount)
     }
@@ -149,7 +149,7 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
             ledger$budget[ledger$ID == id] <- .addTransactionBudgetCategory()
         } else if (change.field == "account") {
             print("Warning: this resets all the account charges from this transaction ID.")
-            account.amounts <- .addTransactionAccountCategory(ledger = ledger.mini)
+            account.amounts <- .addTransactionAccountCategory()
             tempRow <- ledger[which(ledger$ID == id)[1], ]
             ledger <- filter(ledger, ID != id)
             for (i in 1:nrow(account.amounts)) {
