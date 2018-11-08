@@ -69,9 +69,9 @@ addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLe
     }
     for (i in 1:nrow(account.amounts)) {
         old.levels <- levels(new.rows$account)
-        new.levels <- levels(account.amounts$account[i])
-        if (!new.levels %in% old.levels) {
-            new.rows$account <- factor(new.rows$account, levels = c(old.levels, new.levels))
+        new.levels <- levels(account.amounts$account)
+        if (any(!(new.levels %in% old.levels))) {
+            new.rows$account <- factor(new.rows$account, levels = c(old.levels, new.levels[!(new.levels %in% old.levels)]))
         }
         new.rows$account[i] <- account.amounts$account[i]
         new.rows$amount[i] <- account.amounts$amount[i]
