@@ -85,17 +85,33 @@ addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLe
 
 #' @rdname AddTransaction
 #' @export
-addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedgerFile()) {
-    load(.dataLocation())
-    transactions <- viewTransactionsAutoLoad()
+addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), data.location = .dataLocation()) {
+    # load(data.location)
+    transactions <- viewTransactionsAutoLoad(data.location)
     new.rows <- ledger[1,]
     new.rows$ID <- NA
     for (i in 1:nrow(transactions)) {
-        new.rows$date[i] <- as.Date(transactions$V1[i], format = "%Y-%m-%d")
-        new.rows$description[i] <- transactions$V2[i]
-        new.rows$budget[i] <- transactions$V3[i]
-        new.rows$account[i] <- transactions$V4[i]
-        new.rows$amount[i] <- transactions$V5[i]
+        # date
+        date.regex <- "[[:digit:]]{2}/[[:digit:]]{2}/[[:digit:]]{4}"
+        start <- regexpr(date.regex, transactions$V1[i])
+        finish <- start + attr(start, "match.length") - 1
+        new.rows$date[i] <- as.Date(substr(transactions$V1[i], start, finish), format = "%m/%d/%Y")
+
+        # description
+        description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions$V1[i])
+        description <- sub(paste0("on ", date.regex, " is greater .*"), "", description)
+        new.rows$description[i] <- description
+
+        # account and amount
+        new.rows$account[i] <- "Chase.Preferred.credit"
+        start <- regexpr("\\$[[:digit:]]*\\.[[:digit:]]*", transactions$V1[i]) + 1 # find only the first time dollar amount is in the string
+        finish <- start + attr(start, "match.length") - 1
+        new.rows$amount[i] <- -ceiling(as.numeric(substr(transactions$V1[i], start, finish)))
+
+        # budget
+        print(transactions$V1[i])
+        new.rows$budget[i] <- .addTransactionBudgetCategory()
+
         if (i != nrow(transactions)) {
             new.rows <- rbind(new.rows, new.rows[1,])
         }
@@ -117,8 +133,8 @@ addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedg
 
 #' @rdname AddTransaction
 #' @export
-viewTransactionsAutoLoad <- function(suppress = TRUE) {
-    load(.dataLocation())
+viewTransactionsAutoLoad <- function(data.location = .dataLocation(), suppress = TRUE) {
+    load(data.location)
     transactions <- read.csv(auto.add.transaction, header = FALSE, stringsAsFactors = FALSE) # try catch?
     return(transactions)
 }

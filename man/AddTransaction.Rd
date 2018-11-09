@@ -14,9 +14,10 @@ addTransactionManual(ledger = viewLedger(file = file),
   date = NULL, account = NULL, amount = NULL)
 
 addTransactionAuto(ledger = viewLedger(file = file),
-  file = viewLedgerFile())
+  file = viewLedgerFile(), data.location = .dataLocation())
 
-viewTransactionsAutoLoad(suppress = TRUE)
+viewTransactionsAutoLoad(data.location = .dataLocation(),
+  suppress = TRUE)
 
 editTransaction(ledger = viewLedger(file = file),
   file = viewLedgerFile(), ...)

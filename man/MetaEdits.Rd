@@ -3,15 +3,16 @@
 \name{MetaEdits}
 \alias{MetaEdits}
 \alias{createLedger}
-\alias{addAccount}
 \alias{setBudgets}
+\alias{editAutoAddLocation}
 \title{High-level edits}
 \usage{
 createLedger()
 
-addAccount(ledger = viewLedger(file = file), file = viewLedgerFile())
+setBudgets(ledger = viewLedger(file = file), file = viewLedgerFile(),
+  data.location = .dataLocation())
 
-setBudgets(ledger = viewLedger(file = file), file = viewLedgerFile())
+editAutoAddLocation(data.location = .dataLocation())
 }
 \arguments{
 \item{ledger}{Data frame ledger. The ledger where each row is a transaction

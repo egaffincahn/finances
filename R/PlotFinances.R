@@ -5,7 +5,6 @@
 #' @import tidyverse
 #' @import plotly
 #' @importFrom Hmisc monthDays
-#' @param budget.category A character vector of budget category names.
 #'
 #' @description Various plotting functions to show assets, accounts, budgets,
 #'   etc. over different time periods.
@@ -27,6 +26,7 @@
 #'   the month for easy visual tracking of progress.
 #'
 #' @inheritParams viewLedger
+#' @param budget.category A character vector of budget category names.
 #'
 #' @return \code{ggplot} object, which is automatically printed if not stored in
 #'   a variable.

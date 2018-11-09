@@ -19,26 +19,14 @@
 #' @export
 createLedger <- function() {
     # ...
+    throw("createLedger() not yet supported.")
     saveLedger(ledger, file = file)
 }
 
 #' @rdname MetaEdits
 #' @export
-addAccount <- function(ledger = viewLedger(file = file), file = viewLedgerFile()) {
-    print("Current account names:")
-    viewAccountCategories(ledger = ledger, suppress = FALSE)
-    new.account <- readline("Enter new account name (including <acct.>) ")
-    ledger[[new.account]] <- numeric(nrow(ledger))
-    non.account.columns <- ncol(ledger) - length(viewAccountCategories(ledger = ledger))
-    account.index <- as.numeric(readline("Enter position number: ")) + non.account.columns - .5
-    ledger <- ledger[, order(c(1:(ncol(ledger)-1), account.index))]
-    saveLedger(ledger, file = file)
-}
-
-#' @rdname MetaEdits
-#' @export
-setBudgets <- function(ledger = viewLedger(file = file), file = viewLedgerFile()) {
-    load(.dataLocation())
+setBudgets <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), data.location = .dataLocation()) {
+    load(data.location)
     budget.categories <- viewBudgetCategoriesAll()
     budget.amounts <- numeric(length(budget.categories))
     print("For each budget category, enter the budget value you expect per month. Income should be positive, costs should be negative. If it is a special category, type NA.")
@@ -48,5 +36,13 @@ setBudgets <- function(ledger = viewLedger(file = file), file = viewLedgerFile()
     }
     budgets <- budget.amounts
     names(budgets) <- budget.categories
-    save("budgets", "file", file = dataLocation())
+    save("budgets", "file", file = dataLocation)
+}
+
+#' @rdname MetaEdits
+#' @export
+editAutoAddLocation <- function(data.location = .dataLocation()) {
+    load(data.location)
+    auto.add.transaction <- readline("Enter new path for reading transactions to auto add (do not use quotes): ")
+    save(list = ls(), file = data.location)
 }
