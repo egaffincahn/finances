@@ -86,7 +86,7 @@ addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLe
 #' @rdname AddTransaction
 #' @export
 addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), data.location = .dataLocation()) {
-    # load(data.location)
+    load(data.location)
     transactions <- viewTransactionsAutoLoad(data.location)
     new.rows <- ledger[1,]
     new.rows$ID <- NA
@@ -99,7 +99,7 @@ addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedg
 
         # description
         description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions$V1[i])
-        description <- sub(paste0("on ", date.regex, " is greater .*"), "", description)
+        description <- sub(paste0("on ", date.regex, " is greater .*"), "", description) - 1
         new.rows$description[i] <- description
 
         # account and amount
