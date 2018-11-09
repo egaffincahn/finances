@@ -99,7 +99,7 @@ addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedg
 
         # description
         description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions$V1[i])
-        description <- sub(paste0("on ", date.regex, " is greater .*"), "", description) - 1
+        description <- sub(paste0(" on ", date.regex, " is greater .*"), "", description)
         new.rows$description[i] <- description
 
         # account and amount

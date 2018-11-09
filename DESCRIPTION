@@ -1,6 +1,6 @@
 Package: finances
 Title: Keep track of your finances with R
-Version: 2.2.1
+Version: 2.2.2
 Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
 Description: Keeps a ledger with all your transactions in it. Has the capability to add new transactions to one or more financial accounts, track budgets, keep track of multiple accounts, and visualize your data in several ways.
 Depends: R (>= 3.3.2)
