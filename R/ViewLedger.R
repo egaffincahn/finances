@@ -72,9 +72,9 @@ viewLedger <- function(ledger = read.csv(file), file = viewLedgerFile(),
             valid.transactions <- if (is.character(amount.ops.ind)) {
                 eval(call(amount.ops.ind, ledger.mini[, viewAccountCategories(ledger.mini)], amounts[i]))
             } else {
-                amount.ops.ind(ledger.mini[, viewAccountCategories(ledger.mini)], amounts[i])
+                amount.ops.ind(ledger.mini$amount, amounts[i])
             }
-            valid.rows <- valid.rows | apply(valid.transactions, 1, any)
+            valid.rows <- valid.rows | valid.transactions
         }
         ledger.mini <- ledger.mini[valid.rows, ]
     }
