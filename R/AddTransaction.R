@@ -91,22 +91,37 @@ addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedg
     new.rows <- ledger[1,]
     new.rows$ID <- NA
     for (i in 1:nrow(transactions)) {
+
+        line <- paste0(transactions[i,], collapse = "")
+
         # date
-        date.regex <- "[[:digit:]]{2}/[[:digit:]]{2}/[[:digit:]]{4}"
-        start <- regexpr(date.regex, transactions$V1[i])
+        date.regex <- "[[:alpha:]]{3,9} [[:digit:]]{1,2} 20[[:digit:]]{2} at [0|1][[:digit:]]:[0-5][[:digit:]][A|P]M"
+        start <- regexpr(date.regex, line)
         finish <- start + attr(start, "match.length") - 1
-        new.rows$date[i] <- as.Date(substr(transactions$V1[i], start, finish), format = "%m/%d/%Y")
+        new.rows$date[i] <- as.Date(substr(line, start, finish), format = "%B %d %Y")
 
-        # description
-        description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions$V1[i])
-        description <- sub(paste0(" on ", date.regex, " is greater .*"), "", description)
+        # account-contingent
+        account.regex <- paste0("^", c("Capital One", "Chase", "BoA"))
+        account.found <- sapply(account.regex, grepl, line)
+        if (account.found[1]) {
+            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", line)
+            description <- sub(" was approved. ", "", description)
+            description <- sub(date.regex, "", description)
+            new.rows$account[i] <- "CapOne.credit"
+        } else if (account.found[2]) {
+            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", line)
+            description <- sub(" on [[:digit:]]{2}/[[:digit:]]{2}/[[:digit:]]{4} is greater than .*", "", description)
+            new.rows$account[i] <- "Chase.Preferred.credit"
+        } else if (account.found[3]) {
+            # description
+            # is amount regex different than the others?
+            new.rows$account[i] <- "BoA.credit"
+        }
+
         new.rows$description[i] <- description
-
-        # account and amount
-        new.rows$account[i] <- "Chase.Preferred.credit"
-        start <- regexpr("\\$[[:digit:]]*\\.[[:digit:]]*", transactions$V1[i]) + 1 # find only the first time dollar amount is in the string
+        start <- regexpr("\\$[[:digit:]]*\\.[[:digit:]]*", line) + 1 # find only the first time dollar amount is in the string
         finish <- start + attr(start, "match.length") - 1
-        new.rows$amount[i] <- -ceiling(as.numeric(substr(transactions$V1[i], start, finish)))
+        new.rows$amount[i] <- -ceiling(as.numeric(substr(line, start, finish)))
 
         # budget
         print(transactions$V1[i])
