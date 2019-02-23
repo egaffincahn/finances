@@ -90,42 +90,67 @@ addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedg
     transactions <- viewTransactionsAutoLoad(data.location)
     new.rows <- ledger[1,]
     new.rows$ID <- NA
+    new.count <- 0
     for (i in 1:nrow(transactions)) {
 
-        line <- paste0(transactions[i,], collapse = "")
+        if (regexpr("[[:alnum:]]", transactions[i,]) == -1) next()
+        print(transactions[i,])
 
-        # date
-        date.regex <- "[[:alpha:]]{3,9} [[:digit:]]{1,2} 20[[:digit:]]{2} at [0|1][[:digit:]]:[0-5][[:digit:]][A|P]M"
-        start <- regexpr(date.regex, line)
-        finish <- start + attr(start, "match.length") - 1
-        new.rows$date[i] <- as.Date(substr(line, start, finish), format = "%B %d %Y")
-
-        # account-contingent
-        account.regex <- paste0("^", c("Capital One", "Chase", "BoA"))
-        account.found <- sapply(account.regex, grepl, line)
-        if (account.found[1]) {
-            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", line)
-            description <- sub(" was approved. ", "", description)
-            description <- sub(date.regex, "", description)
-            new.rows$account[i] <- "CapOne.credit"
-        } else if (account.found[2]) {
-            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", line)
-            description <- sub(" on [[:digit:]]{2}/[[:digit:]]{2}/[[:digit:]]{4} is greater than .*", "", description)
-            new.rows$account[i] <- "Chase.Preferred.credit"
-        } else if (account.found[3]) {
-            # description
-            # is amount regex different than the others?
-            new.rows$account[i] <- "BoA.credit"
+        command <- readline("DELETE to skip, ADD to add to previous transaction, or leave blank to add alone. ")
+        if (tolower(command) == "delete") {
+            next()
+        } else if (tolower(command) == "add") {
+            print("Not supported yet. Adding transaction normally.")
+        } else if (command == "") {
+            # do nothing here
+        } else {
+            print("Unknown command. Adding transaction normally.")
         }
 
-        new.rows$description[i] <- description
-        start <- regexpr("\\$[[:digit:]]*\\.[[:digit:]]*", line) + 1 # find only the first time dollar amount is in the string
+        new.count <- new.count + 1
+
+        # date
+        date.regex <- "[[:alpha:]]{3,9} [[:digit:]]{1,2}, 20[[:digit:]]{2} at [0|1][[:digit:]]:[0-5][[:digit:]][A|P]M"
+        start <- regexpr(date.regex, transactions[i,])
         finish <- start + attr(start, "match.length") - 1
-        new.rows$amount[i] <- -ceiling(as.numeric(substr(line, start, finish)))
+        date.string <- sub(",", "", substr(transactions[i,], start, finish))
+        new.rows$date[new.count] <- as.Date(date.string, format = "%B %d %Y")
+
+        # account-contingent
+        posneg <- -1 # assume it's a charge
+        if (grepl("^Capital One", transactions[i,])) {
+            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions[i,])
+            description <- sub(" was approved. - ", "", description)
+            description <- sub(date.regex, "", description)
+            new.rows$account[new.count] <- "CapOne.credit"
+        } else if(grepl("^Chase", transactions[i,])) {
+            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions[i,])
+            description <- sub(" on [[:digit:]]{2}/[[:digit:]]{2}/[[:digit:]]{4} is greater than .*", "", description)
+            specific.account.numbers <- c("8251", "9399", "0701")
+            specific.account.names <- c("Preferred", "Slate", "United")
+            new.rows$account[new.count] <- paste("Chase", specific.account.names[sapply(specific.account.numbers, grepl, transactions[i,])], "credit", sep = ".")
+        } else if (grepl("^BofA", transactions[i,]) && grepl("for account 6526", transactions[i,])) {
+            # is amount regex different than the others?
+            posneg <- ifelse(grepl("credited", transactions[i,]), 1, -1)
+            description <- readline("Enter description: ")
+            new.rows$account[new.count] <- "BoA.checking"
+        } else if (grepl("^BofA", transactions[i,]) && grepl("for card 1004", transactions[i,])) {
+            description <- readline("Enter description: ")
+            new.rows$account[new.count] <- "BoA.credit"
+        }
+
+        new.rows$description[new.count] <- description
+        transaction.comma.stripped <- gsub(",", "", transactions[i,])
+        start <- regexpr("\\$[[:digit:]]*\\.[[:digit:]]{1,2}", transaction.comma.stripped) + 1 # find only the first time dollar amount is in the string
+        finish <- start + attr(start, "match.length") - 1
+        new.rows$amount[new.count] <- posneg * ceiling(as.numeric(substr(transaction.comma.stripped, start, finish)))
 
         # budget
-        print(transactions$V1[i])
-        new.rows$budget[i] <- .addTransactionBudgetCategory()
+        new.rows$budget[new.count] <- .addTransactionBudgetCategory()
+
+        #
+        # ASK TO EDIT
+        #
 
         if (i != nrow(transactions)) {
             new.rows <- rbind(new.rows, new.rows[1,])
@@ -150,7 +175,7 @@ addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedg
 #' @export
 viewTransactionsAutoLoad <- function(data.location = .dataLocation(), suppress = TRUE) {
     load(data.location)
-    transactions <- read.csv(auto.add.transaction, header = FALSE, stringsAsFactors = FALSE) # try catch?
+    transactions <- read.csv(auto.add.transaction, header = FALSE, stringsAsFactors = FALSE, sep = "\r") # try catch?
     return(transactions)
 }
 
