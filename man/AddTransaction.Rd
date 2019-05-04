@@ -2,22 +2,14 @@
 % Please edit documentation in R/AddTransaction.R
 \name{AddTransaction}
 \alias{AddTransaction}
-\alias{addTransactionManual}
-\alias{addTransactionAuto}
-\alias{viewTransactionsAutoLoad}
+\alias{addTransaction}
 \alias{editTransaction}
 \alias{viewLedgerMonth}
 \title{Add, edit or view transactions}
 \usage{
-addTransactionManual(ledger = viewLedger(file = file),
+addTransaction(ledger = viewLedger(file = file),
   file = viewLedgerFile(), description = NULL, budget = NULL,
   date = NULL, account = NULL, amount = NULL)
-
-addTransactionAuto(ledger = viewLedger(file = file),
-  file = viewLedgerFile(), data.location = .dataLocation())
-
-viewTransactionsAutoLoad(data.location = .dataLocation(),
-  suppress = TRUE)
 
 editTransaction(ledger = viewLedger(file = file),
   file = viewLedgerFile(), ...)
@@ -34,11 +26,6 @@ financial account. All columns should be numeric except for
 
 \item{file}{The path for the ledger for loading and saving. Has an underlying
 default that needs to be changed in the \code{ViewLedger} file.}
-
-\item{suppress}{Prevents it from printing to the console. All low-level
-functions default to \code{TRUE}, while high-level functions that do not
-have callers and exist for the sole purpose of printing out information
-default to \code{FALSE}.}
 
 \item{descriptions}{Values in the descriptions column to search for. Uses
 regular expressions.}
@@ -58,11 +45,8 @@ manually. Queried values will overwrite the input arguments. Default
 behavior is to query if all the input options are \code{NULL}.}
 }
 \description{
-Add a transaction to the ledger manually via inputs to the
-  console with \code{addTransactionManual}, or automatically by reading from
-  a file with \code{addTransactionAuto}. You can see what the transactions
-  are that would be automatically entered with
-  \code{viewTransactionsAutoLoad}.\cr \code{editTransaction} will display the
+Add a transaction to the ledger via inputs to the console with
+  \code{addTransaction}.\cr \code{editTransaction} will display the
   transactions for the given year, month, day. It defaults to show the
   current month's. If \code{yr}, \code{mo}, \code{dy} is \code{NULL}, it will
   show transactions from all years, months, days, respectively, within the

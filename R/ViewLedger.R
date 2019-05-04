@@ -50,6 +50,7 @@ viewLedger <- function(ledger = read.csv(file), file = viewLedgerFile(),
 
     ledger$description <- as.character(ledger$description)
     ledger$date <- as.Date(ledger$date)
+    ledger$amount <- as.numeric(ledger$amount) # just-in-case scenario
 
     ledger.mini <- ledger
     if (!is.null(on))   ledger.mini <- filter(ledger.mini, date == on)

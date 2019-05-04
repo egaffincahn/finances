@@ -4,11 +4,8 @@
 #'
 #' @import tidyverse
 #'
-#' @description Add a transaction to the ledger manually via inputs to the
-#'   console with \code{addTransactionManual}, or automatically by reading from
-#'   a file with \code{addTransactionAuto}. You can see what the transactions
-#'   are that would be automatically entered with
-#'   \code{viewTransactionsAutoLoad}.\cr \code{editTransaction} will display the
+#' @description Add a transaction to the ledger via inputs to the console with
+#'   \code{addTransaction}.\cr \code{editTransaction} will display the
 #'   transactions for the given year, month, day. It defaults to show the
 #'   current month's. If \code{yr}, \code{mo}, \code{dy} is \code{NULL}, it will
 #'   show transactions from all years, months, days, respectively, within the
@@ -51,7 +48,7 @@
 
 #' @rdname AddTransaction
 #' @export
-addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), description = NULL,
+addTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), description = NULL,
                                  budget = NULL, date = NULL, account = NULL, amount = NULL) {
     new.rows <- ledger[1,]
     new.rows$ID <- NA
@@ -62,12 +59,8 @@ addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLe
         date
     }
     new.rows$budget <- ifelse(is.null(budget), .addTransactionBudgetCategory(), budget)
-    account.amounts <- if (is.null(account) || is.null(amount)) {
-        .addTransactionAccountCategory(account = account, amount = amount)
-    } else {
-        data.frame(account = account, amount = amount)
-    }
-    for (i in 1:nrow(account.amounts)) {
+    account.amounts <- .addTransactionAccountCategory(account = account, amount = amount)
+    for (i in 1:nrow(account.amounts)) { # in case a new account was added
         old.levels <- levels(new.rows$account)
         new.levels <- levels(account.amounts$account)
         if (any(!(new.levels %in% old.levels))) {
@@ -81,102 +74,7 @@ addTransactionManual <- function(ledger = viewLedger(file = file), file = viewLe
     }
     ledger <- .shiftIDs(ledger, new.rows)
     saveLedger(ledger, file)
-}
 
-#' @rdname AddTransaction
-#' @export
-addTransactionAuto <- function(ledger = viewLedger(file = file), file = viewLedgerFile(), data.location = .dataLocation()) {
-    load(data.location)
-    transactions <- viewTransactionsAutoLoad(data.location)
-    new.rows <- ledger[1,]
-    new.rows$ID <- NA
-    new.count <- 0
-    for (i in 1:nrow(transactions)) {
-
-        if (regexpr("[[:alnum:]]", transactions[i,]) == -1) next()
-        print(transactions[i,])
-
-        command <- readline("DELETE to skip, ADD to add to previous transaction, or leave blank to add alone. ")
-        if (tolower(command) == "delete") {
-            next()
-        } else if (tolower(command) == "add") {
-            print("Not supported yet. Adding transaction normally.")
-        } else if (command == "") {
-            # do nothing here
-        } else {
-            print("Unknown command. Adding transaction normally.")
-        }
-
-        new.count <- new.count + 1
-
-        # date
-        date.regex <- "[[:alpha:]]{3,9} [[:digit:]]{1,2}, 20[[:digit:]]{2} at [0|1][[:digit:]]:[0-5][[:digit:]][A|P]M"
-        start <- regexpr(date.regex, transactions[i,])
-        finish <- start + attr(start, "match.length") - 1
-        date.string <- sub(",", "", substr(transactions[i,], start, finish))
-        new.rows$date[new.count] <- as.Date(date.string, format = "%B %d %Y")
-
-        # account-contingent
-        posneg <- -1 # assume it's a charge
-        if (grepl("^Capital One", transactions[i,])) {
-            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions[i,])
-            description <- sub(" was approved. - ", "", description)
-            description <- sub(date.regex, "", description)
-            new.rows$account[new.count] <- "CapOne.credit"
-        } else if(grepl("^Chase", transactions[i,])) {
-            description <- sub(".*\\$[[:digit:]]*\\.[[:digit:]]* at ", "", transactions[i,])
-            description <- sub(" on [[:digit:]]{2}/[[:digit:]]{2}/[[:digit:]]{4} is greater than .*", "", description)
-            specific.account.numbers <- c("8251", "9399", "0701")
-            specific.account.names <- c("Preferred", "Slate", "United")
-            new.rows$account[new.count] <- paste("Chase", specific.account.names[sapply(specific.account.numbers, grepl, transactions[i,])], "credit", sep = ".")
-        } else if (grepl("^BofA", transactions[i,]) && grepl("for account 6526", transactions[i,])) {
-            # is amount regex different than the others?
-            posneg <- ifelse(grepl("credited", transactions[i,]), 1, -1)
-            description <- readline("Enter description: ")
-            new.rows$account[new.count] <- "BoA.checking"
-        } else if (grepl("^BofA", transactions[i,]) && grepl("for card 1004", transactions[i,])) {
-            description <- readline("Enter description: ")
-            new.rows$account[new.count] <- "BoA.credit"
-        }
-
-        new.rows$description[new.count] <- description
-        transaction.comma.stripped <- gsub(",", "", transactions[i,])
-        start <- regexpr("\\$[[:digit:]]*\\.[[:digit:]]{1,2}", transaction.comma.stripped) + 1 # find only the first time dollar amount is in the string
-        finish <- start + attr(start, "match.length") - 1
-        new.rows$amount[new.count] <- posneg * ceiling(as.numeric(substr(transaction.comma.stripped, start, finish)))
-
-        # budget
-        new.rows$budget[new.count] <- .addTransactionBudgetCategory()
-
-        #
-        # ASK TO EDIT
-        #
-
-        if (i != nrow(transactions)) {
-            new.rows <- rbind(new.rows, new.rows[1,])
-        }
-    }
-    id <- 0
-    ids <- numeric(nrow(new.rows))
-    new.rows.mini <- select(new.rows, description, budget, date)
-    for (i in 1:nrow(new.rows)) {
-        if (i == 1 || !all(sapply(1:ncol(new.rows.mini), function(x) new.rows.mini[i,x] == new.rows.mini[i-1,x]))) id <- id + 1
-        ids[i] <- id
-    }
-    for (i in seq(unique(ids))) {
-        ledger <- .shiftIDs(ledger, filter(new.rows, ids == i))
-        ledger <- arrange(ledger, ID)
-    }
-    write(data.frame(), file = auto.add.transaction, ncolumns = 1)
-    saveLedger(ledger, file)
-}
-
-#' @rdname AddTransaction
-#' @export
-viewTransactionsAutoLoad <- function(data.location = .dataLocation(), suppress = TRUE) {
-    load(data.location)
-    transactions <- read.csv(auto.add.transaction, header = FALSE, stringsAsFactors = FALSE, sep = "\r") # try catch?
-    return(transactions)
 }
 
 #' @rdname AddTransaction
@@ -300,28 +198,63 @@ editTransaction <- function(ledger = viewLedger(file = file), file = viewLedgerF
 
 #' @export
 .addTransactionAccountCategory <- function(account = NULL, amount = NULL) {
-    account.amounts <- data.frame(account = numeric(), amount = numeric())
     existing.categories <- viewAccountCategories(suppress = !is.null(account))
-    inputs.supplied <- !is.null(account) || !is.null(amount) # assumes no account or amount was provided - if one was, don't ask for addtl accounts
+    if (length(amount) > length(account)) warning("Careful: more amounts than accounts", call. = FALSE, immediate. = TRUE)
+    count <- 0 # counts the number of account,amount pairs in the transaction
+    account.temp <- NULL
     while (TRUE) {
-        if (is.null(account)) {
-            account <- readline("Enter account category from above or its index: ")
-        } else {
-            inputs.supplied <- TRUE
+        count <- count + 1
+        message <- "Enter account category from above or its index. Leave blank to finish: "
+        account.temp.new <- NULL
+        try.again <- FALSE
+        while (TRUE) {
+            if (count > length(account) || try.again) {
+                account.temp <- readline(message)
+                if (account.temp == "") {
+                    if (!is.null(account.temp.new)) account[count] <- account.temp.new
+                    break()
+                }
+            } else if (is.numeric(account[count]) && !(account[count] >= 1 && account[count] <= length(existing.categories))) {
+                account.temp <- account[count] # invalid account, will fail later and try again
+            } else if (!is.numeric(account[count]) && !(account[count] %in% existing.categories)) {
+                account.temp <- account[count] # invalid account, will fail later and try again
+            } else {
+                break()
+            }
+            account.temp.numeric <- suppressWarnings(as.numeric(account.temp))
+            if (is.na(account.temp.numeric)) {
+                if (account.temp %in% existing.categories) {
+                    account[count] <- account.temp
+                    break()
+                }
+            } else {
+                if (account.temp.numeric >= 1 && account.temp.numeric <= length(existing.categories)) {
+                    account[count] <- existing.categories[account.temp.numeric]
+                    break()
+                }
+            }
+            message <- paste(account.temp, "is not a current account. Enter a new one or leave blank to add new account. ")
+            account.temp.new <- account.temp
+            try.again <- TRUE
         }
-        if (account == "") break()
-        if (suppressWarnings(!is.na(as.numeric(account)))) account <- viewAccountCategories()[as.numeric(account)]
-        account.temp <- "placeholder"
-        while (!(account %in% existing.categories) && account.temp != "") {
-            account.temp <- readline(paste(account, "is not a current account. Enter a new one or leave blank to add. "))
-            if (account.temp != "") account <- account.temp
+        if (!is.null(account.temp) && account.temp == "" && is.null(account.temp.new) && length(account) == length(amount)) break() # want to do this when actually finished
+
+        if (is.numeric(account[count])) account[count] <- existing.categories[account[count]]
+        message <- paste0("Enter amount for ", account[count], ": ")
+        while (TRUE) {
+            if (count > length(amount)) {
+                amount.temp <- suppressWarnings(as.numeric(readline(message)))
+            } else {
+                amount.temp <- amount[count]
+            }
+            if (!is.na(amount.temp)) {
+                amount[count] <- amount.temp
+                break()
+            }
+            message <- paste0(amount.temp, " is not a valid number. Enter a valid number: ")
         }
-        if (is.null(amount)) amount <- as.numeric(readline(paste("Enter amount for ", account, ": ", sep = "")))
-        account.amounts <- rbind(account.amounts, data.frame(account = account, amount = amount))
-        if (inputs.supplied) break()
-        account <- NULL
-        amount <- NULL
     }
+    account.amounts <- data.frame(account = account, amount = amount)
     return(account.amounts)
 }
 
