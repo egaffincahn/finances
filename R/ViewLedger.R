@@ -80,6 +80,7 @@ viewLedger <- function(ledger = read.csv(file), file = viewLedgerFile(),
         ledger.mini <- ledger.mini[valid.rows, ]
     }
     if (!is.null(accounts)) {
+        if (is.numeric(accounts)) accounts <- viewAccountCategories()[accounts]
         ledger.mini <- filter(ledger.mini, account %in% accounts)
         ledger.mini$account <- factor(ledger.mini$account, levels = accounts)
     }
